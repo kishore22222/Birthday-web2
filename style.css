@@ -1,10 +1,13 @@
 /* Custom styles for our Anime Theme */
-body {
+html,body {
     font-family: 'Poppins', sans-serif;
     background-color: #F0F8FF; /* Alice Blue - a very light sky blue */
     color: #2c3e50; /* Dark Navy/Slate */
     max-width: 100%;
     overflow-x: hidden;
+}
+*{
+    box-sizing: border-box;
 }
 .font-anime {
     font-family: 'Mochiy Pop One', sans-serif;
