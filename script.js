@@ -1,5 +1,33 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // --- AUDIO SETUP (FIXED) ---
+    // Browsers block autoplay until a real user gesture happens.
+    // The floating 🎵 button is that trusted gesture — most reliable fix.
+    const music = document.getElementById("bg-music");
+    const musicBtn = document.getElementById("music-btn");
+    let isPlaying = false;
+
+    if (music && musicBtn) {
+        musicBtn.addEventListener("click", function() {
+            if (!isPlaying) {
+                
+                music.play()
+                    .then(() => {
+                        isPlaying = true;
+                        musicBtn.textContent = "🔇";
+                        musicBtn.title = "Mute Music";
+                        console.log("Music playing ✅");
+                    })
+                    .catch(err => console.log("Play blocked:", err));
+            } else {
+                music.pause();
+                isPlaying = false;
+                musicBtn.textContent = "🎵";
+                musicBtn.title = "Play Music";
+            }
+        });
+    }
+
     // --- Live Age Counter ---
     const birthDate = new Date('2003-05-25T00:00:00');
     const countdownElement = document.getElementById('countdown');
@@ -26,62 +54,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
         countdownElement.innerHTML = `${years}y ${months}m ${days}d <br> ${hours}h ${minutes}m ${seconds}s`;
     }
+
     setInterval(updateAge, 1000);
     updateAge();
 
-    // --- Initialize AOS (Animate on Scroll) ---
+    // --- AOS Animation ---
     AOS.init({
         duration: 800,
         once: true,
     });
 
-    // --- Initialize LightGallery ---
-    lightGallery(document.getElementById('lightgallery'), {
-        speed: 500,
-        download: false
-    });
+    // --- LightGallery ---
+    const gallery = document.getElementById('lightgallery');
+    if (gallery) {
+        lightGallery(gallery, {
+            speed: 500,
+            download: false
+        });
+    }
 
-    // --- Hall of Fame Scroller ---
+    // --- Hall of Fame Scroll ---
     const scroller = document.getElementById('hall-of-fame-scroller');
     const scrollLeftBtn = document.getElementById('scroll-left-btn');
     const scrollRightBtn = document.getElementById('scroll-right-btn');
+
     if (scroller && scrollLeftBtn && scrollRightBtn) {
         const card = scroller.querySelector('.snap-center');
-        const cardWidth = card.offsetWidth + parseInt(getComputedStyle(card.parentElement).gap);
+        const gap = parseInt(getComputedStyle(scroller.querySelector('div')).gap || 0);
+        const cardWidth = card.offsetWidth + gap;
 
         scrollRightBtn.addEventListener('click', () => {
             scroller.scrollBy({ left: cardWidth, behavior: 'smooth' });
         });
+
         scrollLeftBtn.addEventListener('click', () => {
             scroller.scrollBy({ left: -cardWidth, behavior: 'smooth' });
         });
     }
 
-    // --- Video Uploader ---
-    const videoUploadInput = document.getElementById('video-upload');
-    const videoPlayer = document.getElementById('video-player');
-    const videoUploadLabel = document.getElementById('video-upload-label');
-
-    if(videoUploadInput && videoPlayer && videoUploadLabel) {
-        videoUploadLabel.addEventListener('click', () => {
-            videoUploadInput.click();
-        });
-
-        videoUploadInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const videoURL = URL.createObjectURL(file);
-                videoPlayer.src = videoURL;
-                videoPlayer.classList.remove('hidden');
-                videoUploadLabel.classList.add('hidden');
-                videoPlayer.play();
-            }
-        });
-    }
-
-
-    // --- Sakura Petal Animation ---
+    // --- Sakura Animation ---
     const canvas = document.getElementById('sakura-canvas');
+
     if (canvas) {
         const ctx = canvas.getContext('2d');
         let petals = [];
@@ -91,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
+
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
@@ -100,36 +114,38 @@ document.addEventListener('DOMContentLoaded', function() {
             this.w = 25 + Math.random() * 15;
             this.h = 20 + Math.random() * 10;
             this.opacity = this.w / 40;
-            this.flip = Math.random();
             this.xSpeed = 1.5 + Math.random() * 2;
-            this.ySpeed = 1 + Math.random() * 1;
-            this.flipSpeed = Math.random() * 0.03;
+            this.ySpeed = 1 + Math.random();
         }
 
         Petal.prototype.draw = function() {
             if (this.y > canvas.height || this.x > canvas.width) {
                 this.x = -this.w;
                 this.y = Math.random() * canvas.height * 2 - canvas.height;
-                this.xSpeed = 1.5 + Math.random() * 2;
-                this.ySpeed = 1 + Math.random() * 1;
-                this.flip = Math.random();
             }
+
             ctx.globalAlpha = this.opacity;
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
-            ctx.bezierCurveTo(this.x + this.w / 2, this.y - this.h / 2, this.x + this.w, this.y, this.x + this.w / 2, this.y + this.h / 2);
-            ctx.bezierCurveTo(this.x, this.y + this.h, this.x - this.w / 2, this.y, this.x, this.y);
-            ctx.closePath();
+            ctx.bezierCurveTo(
+                this.x + this.w / 2, this.y - this.h / 2,
+                this.x + this.w, this.y,
+                this.x + this.w / 2, this.y + this.h / 2
+            );
+            ctx.bezierCurveTo(
+                this.x, this.y + this.h,
+                this.x - this.w / 2, this.y,
+                this.x, this.y
+            );
             ctx.fillStyle = '#FFB7C5';
             ctx.fill();
-        }
+        };
 
         Petal.prototype.update = function() {
             this.x += this.xSpeed;
             this.y += this.ySpeed;
-            this.flip += this.flipSpeed;
             this.draw();
-        }
+        };
 
         function createPetals() {
             petals = [];
@@ -140,14 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            petals.forEach(petal => {
-                petal.update();
-            });
+            petals.forEach(p => p.update());
             requestAnimationFrame(animate);
         }
 
         createPetals();
         animate();
     }
-});
 
+});
