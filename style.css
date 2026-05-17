@@ -3,6 +3,8 @@ body {
     font-family: 'Poppins', sans-serif;
     background-color: #F0F8FF; /* Alice Blue - a very light sky blue */
     color: #2c3e50; /* Dark Navy/Slate */
+    max-width: 100%;
+    overflow-x: hidden;
 }
 .font-anime {
     font-family: 'Mochiy Pop One', sans-serif;
@@ -20,7 +22,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 5;
+    z-index: 0;
     pointer-events: none; /* Allows clicks to go through the canvas */
 }
 /* For hiding the scrollbar */
